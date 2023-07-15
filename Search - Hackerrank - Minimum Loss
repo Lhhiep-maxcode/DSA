@@ -1,0 +1,29 @@
+Solution: this requires to return a minimum positive number as answer (the minimum loss) so we definitely use sorting to find minimum gap. However this requires minimum LOSS therefore we have to pay attention to the position of number in given array => Use a vector of pair to save value for first and original index for second. Then sort in descending order and find the minimum gap
+
+bool cmp(pair<long, long> one, pair<long, long> two)
+{
+    return one.first > two.first;
+}
+
+long minimumLoss(vector<long> price) {
+    int sz = price.size();
+    vector<pair<long, long>> newprice;
+    for(int i = 0; i < sz; i++)
+    {
+        pair<long, long> temp;
+        temp.first = price[i];
+        temp.second = i;
+        newprice.push_back(temp);
+    }
+    sort(newprice.begin(), newprice.end(), cmp);
+    long ans = 100000000000;
+    for(int i = 0; i < sz - 1; i++)
+    {
+        //cout << newprice[i].first << " " << newprice[i].second << endl;
+        if(newprice[i].second < newprice[i + 1].second)
+        {
+            ans = min(ans, newprice[i].first - newprice[i + 1].first);
+        }
+    }
+    return ans;
+}
