@@ -1,0 +1,32 @@
+Explaination: 
+When it comes to this kind of problems(subarray & sum), we immediately think about Kadane algorithm.
+However this is maximum subarray sum MODULO m, so we cannot simply apply it.
+1. To find the max, we first "spa" the sum of subarray mod m end up with every indices.
+2. Then iterate each value (sum end up with index i), find the larger but smallest value compared with the current iterated value (if existing - using set::upper_bound) 
+   and subtract the current by the found value.
+3. Take the biggest one.
+
+Code Sample:
+long maximumSum(vector<long> a, long m) {
+    int sz = a.size();
+    a[0] = a[0] % m;
+    for(int i = 1; i < sz; i++)
+    {
+        a[i] = (a[i] + a[i - 1]) % m;
+    }
+    long ans = 0;
+    set<long> st;
+    for(int i = 0; i < sz; i++)
+    {
+        set<long>::iterator it = st.upper_bound(a[i]);
+        long x = 0;
+        if(it == st.end())
+        {
+            x = a[i];
+        }
+        else x = (a[i] - *it + m) % m;
+        ans = max(x, ans);
+        st.insert(a[i]);
+    }
+    return ans;
+}
