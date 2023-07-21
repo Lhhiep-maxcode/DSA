@@ -1,0 +1,50 @@
+When it comes to palindromes problem, we can think about dynamic programming. 
+Hints: 
+- We can use array to combine characters.
+- Here, I use 3 arrays:
+  + Mono[]: is to save characters have been checked so far
+  + Doub[][]: is to save potential string containing 2 characters (i, j) (i = star, j = end) have been checked so far
+  + Trip[]: is to save triplets (i, j, j) that potentially become palindromes
+
+Code sample:
+//Java
+public static int shortPalindrome(String s) {
+    int[] mono = new int[26];
+    int[][] doub = new int[26][26];
+    int[] trip = new int[26];
+    int sz = s.length();
+    int count = 0;
+    for(int i = 0; i < sz; i++)
+    {
+        char k = s.charAt(i);
+        count = (count + trip[k - 'a']) % 1000000007;
+        for(int j = 0; j < 26; j++)
+        {
+            trip[j] = (trip[j] + doub[j][k - 'a']) % 1000000007;
+            doub[j][k - 'a'] = (doub[j][k - 'a'] + mono[j]) % 1000000007;
+        }
+        mono[k - 'a'] = (mono[k - 'a'] + 1) % 1000000007;
+    }
+    return count;
+}
+
+//Cpp
+int shortPalindrome(string s)
+{
+    vector<int> mono(26, 0);
+    vector<vector<int>> doub(26, vector<int> (26, 0));
+    vector<int> trip(26, 0);
+    int sz = s.size();
+    int ans = 0;
+    for(int i = 0; i < sz; i++)
+    {
+        ans = (ans + trip[s[i] - 'a']) % 1000000007;
+        for(int j = 0; j < 26; j++)
+        {
+            trip[j] = (trip[j] + doub[j][s[i] - 'a']) % 1000000007;
+            doub[j][s[i] - 'a'] = (doub[j][s[i] - 'a'] + mono[j]) % 1000000007;
+        }
+        mono[s[i] - 'a'] = (mono[s[i] - 'a'] + 1) % 1000000007;
+    }
+    return ans;
+}
