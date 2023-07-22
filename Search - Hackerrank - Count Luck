@@ -1,6 +1,6 @@
 Explaination: 
 Again, we have the same problem like "Connected Cells" I have done before. The idea still the same, we have to use dfs/bfs to solve this problem.
-The hint to think about dfs/bfs is the array and find the way (dò đường).
+The hint to think about dfs/bfs is the array and traverse the way from 'M' to '*'.
 
 //Code sample:
 #include<iostream>
