@@ -1,0 +1,87 @@
+Explaination: 
+Again, we have the same problem like "Connected Cells" I have done before. The idea still the same, we have to use dfs/bfs to solve this problem.
+The hint to think about dfs/bfs is the array and find the way (dò đường).
+
+//Code sample:
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+#include<map>
+#include<queue>
+#include<vector>
+using namespace std;
+
+vector<pair<int, int>> movement = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+int countLuck(vector<string> &s, int n, int m, int starty, int startx, bool &check)
+{
+    int ans = 0;
+    int count = 0;
+    if(s[starty][startx] == '*')
+    {
+        check = true;
+        return ans;
+    }
+    s[starty][startx] = 'X';
+    for(int i = 0; i < 4; i++)
+    {
+        if(starty + movement[i].first >= 0 && starty + movement[i].first < n
+        && startx + movement[i].second >= 0 && startx + movement[i].second < m 
+        && (s[starty + movement[i].first][startx + movement[i].second] == '.' 
+        || s[starty + movement[i].first][startx + movement[i].second] == '*'))
+            count++;
+    }
+    if(count > 1) ans++;
+    for(int i = 0; i < 4; i++)
+    {
+        if(starty + movement[i].first >= 0 && starty + movement[i].first < n 
+        && startx + movement[i].second >= 0 && startx + movement[i].second < m 
+        && (s[starty + movement[i].first][startx + movement[i].second] == '.' 
+        || s[starty + movement[i].first][startx + movement[i].second] == '*'))
+        {
+            ans = ans + countLuck(s, n, m, starty + movement[i].first, startx + movement[i].second, check);
+        }
+        if(check) return ans;
+    }
+    if(count > 1) ans--;
+    return ans;
+}
+
+int main()
+{
+    int l;
+    cin >> l;
+    while(l)
+    {
+        int n, m;
+        cin >> n >> m;
+        vector<string> s(n, "");
+        for(int i = 0; i < n; i++)
+        {
+            cin >> s[i];
+        }
+        int k = 0;
+        cin >> k;
+        bool check = false;
+        int starty, startx = 0;
+        for(int i = 0; i < n; i++)
+        {
+            bool findd = false;
+            for(int j = 0; j < m; j++)
+            {
+                if(s[i][j] == 'M')
+                {
+                    starty = i;
+                    startx = j;
+                    findd = true;
+                    break;
+                }
+            }
+            if(findd) break;
+        }
+        if(countLuck(s, n, m, starty, startx, check) == k) cout << "Impressed\n";
+        else cout << "Oops!\n";
+        l--;
+    }
+    return 0;
+}
