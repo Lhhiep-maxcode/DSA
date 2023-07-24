@@ -1,0 +1,64 @@
+Explaination: 
+To find the sum of a tree, we have to traverse it. 
+Therefore, we can think about dfs/bfs to traverse and calculate the sum of a subtree with a root V(i);
+(bfs also do well but in this problem, i prefer dfs)
+However, it would exceed time limit if we called dfs for n times. (try to call dfs just one time)
+So, the optimal way to solve this problem is to calculate the sum of subtree with root V(i). Therefore, the sum of inital tree is V(1).
+Then, we find the best cut by iterate sum of subtree array and apply this formula: ans = min(ans, (data[0] - data[i]) - data[i]);
+                                                                                                   ------------------   ---------
+                                                                                                  sum of first subtree  sum of second subtree
+
+//Code sample:
+#include<bits/stdc++.h>
+
+using namespace std;
+
+//using dfs
+int dfs(int v, vector<vector<int>> const &matrix, vector<bool> &check, vector<int> &data)
+{
+    int ans = data[v - 1];
+    check[v] = true;
+    int sz = matrix[v].size();
+    for(int i = 0; i < sz; i++)
+    {
+        if(!check[matrix[v][i]])
+        {
+            ans += dfs(matrix[v][i], matrix, check, data);
+        }
+    }
+    data[v - 1] = ans;
+    return ans;
+}
+
+int cutTheTree(vector<int> data, vector<vector<int>> edges) {
+    int sz = edges.size();
+    int ans = 100000000;
+    vector<vector<int>> matrix(100001, vector<int>());
+    int datasz = data.size();
+    for(int i = 0; i < sz; i++)
+    {
+        matrix[edges[i][0]].push_back(edges[i][1]);
+        matrix[edges[i][1]].push_back(edges[i][0]);
+    }
+    vector<bool> check(100001, false);
+    dfs(1, matrix, check, data);
+    for(int i = 0; i < datasz; i++)
+    {
+        ans = min(ans, abs(data[0] - data[i] - data[i]));   
+    }
+    return ans;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> data(n, 0);
+    vector<vector<int>> edges(n - 1, vector<int>(2, 0));
+    for(int i = 0; i < n; i++) cin >> data[i];
+    for(int i = 0; i < n - 1; i++)
+    {
+        cin >> edges[i][0] >> edges[i][1];
+    }
+    cout << cutTheTree(data, edges);
+    return 0;
+}
