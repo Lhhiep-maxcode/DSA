@@ -1,6 +1,6 @@
 Explaination: 
 To find the sum of a tree, we have to traverse it. 
-Therefore, we can think about dfs/bfs to traverse and calculate the sum of a subtree with a root V(i);
+Therefore, we can think about dfs/bfs to traverse and calculate the sum of a tree with a root V(i);
 (bfs also do well but in this problem, i prefer dfs)
 However, it would exceed time limit if we called dfs for n times. (try to call dfs just one time)
 So, the optimal way to solve this problem is to calculate the sum of subtree with root V(i). Therefore, the sum of inital tree is V(1).
