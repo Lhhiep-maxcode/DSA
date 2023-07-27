@@ -1,0 +1,53 @@
+Explaination: 
+We will solve this problem by normal logic. There's no algorithm here
+However, we must consider these things:
++ if we have enough money to invest, try to invest but remember that investing is not always good way to reach target soon (we can save and produce also)
++ in my code, variable ans is the maximun pass of every stages to reach target
+              vairable pass is the number of pass we invested.
++ the ans = min(ans, pass + more_passes_to_reach_target)
++ the condition for while loop is pass < ans (because if pass >= ans, it can take some more steps or not to reach target - as i mentioned investing is not always good)
+
+//Code sample:
+#include<bits/stdc++.h>
+
+using namespace std;
+
+long long minimumPasses(long long m, long long w, long long p, long long n) {
+    // check for special cases (big int)
+    if(m >= n || w >= n || (sqrt(n) <= w) && (sqrt(n) <= m)) return 1;
+    // solution
+    unsigned long long pass = 0;
+    unsigned long long ans = (n + m * w - 1) / (m * w);
+    unsigned long long candy = 0;
+    while(pass < ans)
+    {
+        //investing
+        unsigned long long resource = candy / p;
+        candy -= resource * p;
+        if(resource >= abs(m - w))
+        {
+            resource -= abs(m - w);
+            (m < w) ? (m += (w - m)) : (w += (m - w));
+            m += resource / 2;
+            w += (resource - resource / 2); 
+        }
+        else
+        {
+            (m < w) ? (m += resource) : (w += resource);
+            resource = 0;
+        }
+        pass = pass + (p - candy + m * w - 1) / (m * w);
+        candy = candy + (p - candy + m * w - 1) / (m * w) * m * w;
+        unsigned long long morepass = (n - candy + m * w - 1) / (m * w);
+        ans = min(ans, pass + morepass);
+    }
+    return ans;
+}
+
+int main() {
+    long long m, w, p, n;
+    cin >> m >> w >> p >> n;
+    long long ans = minimumPasses(m, w, p, n);
+    cout << ans;
+    return 0;
+}
