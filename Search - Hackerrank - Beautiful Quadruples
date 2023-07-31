@@ -1,0 +1,44 @@
+Explaination:
+To avoid duplicate answer, we have to sort that a <= b <= c <= d;
+When it comes to this problem, the first thing i think about is brute force
+However, if we do brute force, we need 4 nested loops and that makes TLE
+So we have to optimize by reducing 2 most inner loops. That means we have to precalculate <x ^ y> 
+w ^ x ^ y ^ z == 0 when w ^ x == y ^ z
+(2 * d - c - j + 2) * (c - j + 1) / 2 is formula i find by myself. It is to count the number of pair that the number ab (a <= b, a >= j & a <= c and b >= a & b <= d)
+
+//Code sample:
+    static long beautifulQuadruples(long a, long b, long c, long d) {
+        /*
+         * Write your code here.
+         */
+        long count = 0;
+        long arr[] = {a, b, c, d};
+        Arrays.sort(arr);
+        a = arr[0];
+        b = arr[1];
+        c = arr[2];
+        d = arr[3];
+        long arrsaving[][] = new long[7000][7000];
+        for(int i = 1; i <= c; i++)
+        {
+            for(int j = i; j <= d; j++)
+            {
+                arrsaving[i][i ^ j]++;
+            }
+        }
+        for(int i = 6998; i >= 0; i--)
+        {
+            for(int j = 6998; j >= 0; j--)
+            {
+                arrsaving[i][j] += arrsaving[i + 1][j];
+            }
+        }
+        for(int i = 1; i <= a; i++)
+        {
+            for(int j = i; j <= b; j++)
+            {
+                count += (2 * d - c - j + 2) * (c - j + 1) / 2 - arrsaving[j][i ^ j];
+            }
+        }
+        return count;
+    }
