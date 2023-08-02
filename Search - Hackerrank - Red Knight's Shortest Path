@@ -1,0 +1,60 @@
+Explaination: Definitely, we will think about dfs/bfs. In this problem, i will solve this by bfs
+
+//Code sample:
+struct Node
+{
+    int x;
+    int y;
+    Node* prev;
+    int count;
+    string s = "";
+    Node(int x, int y, Node* prev, int count, string s)
+    {
+        this->x = x;
+        this->y = y;
+        this->prev = prev;
+        this->count = count;
+        this->s = s;
+    }
+    Node(){}
+};
+
+void printShortestPath(int n, int i_start, int j_start, int i_end, int j_end) {
+    // Print the distance along with the sequence of moves.
+    vector<pair<int, int>> movement = {{-1, -2}, {1, -2}, {2, 0}, {1, 2}, {-1, 2}, {-2, 0}};
+    vector<string> state = {"UL", "UR", "R", "LR", "LL", "L"};
+    Node* root = new Node(j_start, i_start, NULL, 0, "");
+    vector<vector<bool>> check(n, vector<bool> (n, false));
+    check[root->y][root->x] = true;
+    queue<Node*> box;
+    box.push(root);
+    vector<string> res;
+    while(box.size() != 0)
+    {
+        Node* temp = box.front();
+        if(temp->x == j_end && temp->y == i_end)
+        {
+            cout << temp->count << "\n";
+            while(temp != NULL)
+            {
+                Node* prevtemp = temp->prev;
+                if(temp->s != "") res.insert(res.begin(), temp->s);
+                temp = prevtemp;
+            }
+            int sz = res.size();
+            for(int i = 0; i < sz; i++) cout << res[i] << " ";
+            return;
+        }
+        for(int i = 0; i < 6; i++)
+        {
+            Node* next_node = new Node(temp->x + movement[i].first, temp->y + movement[i].second, temp, temp->count + 1, state[i]);
+            if(next_node->x < n && next_node->y < n && next_node->x >= 0 && next_node->y >= 0 && check[next_node->y][next_node->x] == false)
+            {
+                box.push(next_node);
+                check[next_node->y][next_node->x] = true;
+            }
+        }
+        box.pop();
+    }
+    cout << "Impossible";
+}
