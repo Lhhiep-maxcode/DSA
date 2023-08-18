@@ -1,0 +1,173 @@
+We can think about creating a matrix and rotate it. But it cant be. (too many rows and columns)
+Other way is that I tried to solve this with time complexity O(L * S) but i cant pass any tests, except for sample test.
+This kind of problem is smaller square for later. Therefore, we can think about binary search.
+This is the way i do (O(LlogS)):
+1. Let's say initial index of targeted cell is (rx, cx)
+2. Top left cell is at (r, c)
+3. Bottom right cell is at (r + d, c + d)
+4. We can prove that after each rotation, initial targeted cell will become (r - c + cx, r + c + d - rx)
+5. As the given formular containing jsut plus and minus, we can precalculate readyrow and readycolumn for rotations
+6. If the new index of targeted cell is out of square at that index, it means it cant apply that rotation.
+7. Find another rotation by binary search and apply the same stages 1, 2, 3, 6.
+
+
+//Sample code:
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Result {
+
+    /*
+     * Complete the 'kingRichardKnights' function below.
+     *
+     * The function is expected to return a 2D_INTEGER_ARRAY.
+     * The function accepts following parameters:
+     *  1. INTEGER n
+     *  2. INTEGER s
+     *  3. INTEGER_ARRAY knights
+     */
+
+    public static void binarySearch(int i, int s, int rx, int cx, List<List<Integer>> res, List<Integer> readyrow, List<Integer> readycol, List<List<Integer>> commands)
+    {
+        int left = 0;
+        int right = s - 1;
+
+        int resrx = rx;
+        int rescx = cx;
+
+        int tmpresrx = rx;
+        int tmprescx = cx;
+
+        while(left <= right)
+        {
+            int mid = (left + right) >> 1;
+            int startrow = commands.get(mid).get(0);
+            int startcol = commands.get(mid).get(1);
+            int endrow = commands.get(mid).get(2) + startrow;
+            int endcol = commands.get(mid).get(2) + startcol;
+            if(mid % 2 == 0)
+            {
+                if(((mid + 1) >> 1) % 2 == 0)
+                {
+                    tmpresrx = readyrow.get(mid) + cx;
+                    tmprescx = readycol.get(mid) - rx;
+                }
+                else
+                {
+                    tmpresrx = readyrow.get(mid) - cx;
+                    tmprescx = readycol.get(mid) + rx;
+                }
+            }
+            else
+            {
+                if(((mid + 1) >> 1) % 2 != 0)
+                {
+                    tmpresrx = readyrow.get(mid) - rx;
+                    tmprescx = readycol.get(mid) - cx;
+                }
+                else
+                {
+                    tmpresrx = readyrow.get(mid) + rx;
+                    tmprescx = readycol.get(mid) + cx;
+                }
+            }
+            if(tmpresrx >= startrow && tmpresrx <= endrow && tmprescx >= startcol && tmprescx <= endcol)
+            {
+                resrx = tmpresrx;
+                rescx = tmprescx;
+                left = mid + 1;
+            }
+            else
+            {
+                right = mid - 1;
+            }
+        }
+        res.get(i).add(resrx);
+        res.get(i).add(rescx);
+    }
+
+    public static List<List<Integer>> kingRichardKnights(int n, int s, List<List<Integer>> commands, List<Long> knights) {
+        // Write your code here
+        List<List<Integer>> res = new ArrayList<>();
+        for(int i = 0; i < knights.size(); i++)
+        {
+            res.add(new ArrayList<>());
+        }
+        int cmdrow = commands.get(0).get(0);
+        int cmdcol = commands.get(0).get(1);
+        int cmddis = commands.get(0).get(2);
+
+        List<Integer> readyrow = new ArrayList<>();
+        List<Integer> readycol = new ArrayList<>();
+
+        readyrow.add(cmdrow - cmdcol);
+        readycol.add(cmdrow + cmdcol + cmddis);
+
+        for(int i = 1; i < s; i++)
+        {
+            int prevreadycol = readycol.get(i - 1);
+            int prevreadyrow = readyrow.get(i - 1);
+
+            cmdrow = commands.get(i).get(0);
+            cmdcol = commands.get(i).get(1);
+            cmddis = commands.get(i).get(2);
+
+            readyrow.add(cmdrow - cmdcol + prevreadycol);
+            readycol.add(cmdrow + cmdcol + cmddis - prevreadyrow);
+        }
+
+        for(int i = 0; i < knights.size(); i++)
+        {
+            int rx = (int) (knights.get(i) / n + 1);
+            int cx = (int) (knights.get(i) % n + 1);
+
+            binarySearch(i, s, rx, cx, res, readyrow, readycol, commands);
+
+        }
+        return res;
+    }
+
+}
+
+public class HelloWorld {
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int s = sc.nextInt();
+        List<List<Integer>> commands = new ArrayList<>();
+        for(int i = 0; i < s; i++)
+        {
+            List<Integer> tmp = new ArrayList<>();
+            int a, b, d;
+            a = sc.nextInt();
+            b = sc.nextInt();
+            d = sc.nextInt();
+            tmp.add(a);
+            tmp.add(b);
+            tmp.add(d);
+            commands.add(tmp);
+        }
+        List<Long> knights = new ArrayList<>();
+        int l = sc.nextInt();
+        while(l-- > 0)
+        {
+            long x = sc.nextLong();
+            knights.add(x);
+        }
+        commands = Result.kingRichardKnights(n, s, commands, knights);
+        for(int i = 0; i < commands.size(); i++)
+        {
+            System.out.println(commands.get(i).get(0) + " " + commands.get(i).get(1));
+        }
+        sc.close();
+    }
+}
