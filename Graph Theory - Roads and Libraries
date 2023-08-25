@@ -1,0 +1,114 @@
+Step to solve this problem:
+Step 1: It's easy to realize that if cost of library is less than cost of road, we will construct a library for each city.
+Step 2: If it's not step1-case, we will try to create and count how many seperated connected graph.
+Step 3: We can realize that each connected graph (n vertices) just need a library and n - 1 roads to satisfy requirements
+Step 4: Use bfs to build graph and count, find a formular for step 3.
+
+//Code sample:
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Result {
+
+    /*
+     * Complete the 'roadsAndLibraries' function below.
+     *
+     * The function is expected to return a LONG_INTEGER.
+     * The function accepts following parameters:
+     *  1. INTEGER n
+     *  2. INTEGER c_lib
+     *  3. INTEGER c_road
+     *  4. 2D_INTEGER_ARRAY cities
+     */
+    
+    public static long bfs(int vertex, boolean visited[], List<List<Integer>> adjlist)
+    {
+        long res = 1;
+        LinkedList<Integer> queue = new LinkedList<>();
+        queue.add(vertex);
+        visited[vertex] = true;
+        while(queue.size() != 0)
+        {
+            int v = queue.poll();
+            for(int i = 0; i < adjlist.get(v).size(); i++)
+            {
+                if(visited[adjlist.get(v).get(i)] == false)
+                {
+                    visited[adjlist.get(v).get(i)] = true;
+                    queue.add(adjlist.get(v).get(i));
+                    res++;
+                }
+            }
+        }    
+        return res;
+    }
+    
+    public static long roadsAndLibraries(int n, long c_lib, long c_road, List<List<Integer>> cities) {
+    // Write your code here
+        long res = 0;
+        //each city has a library
+        if(c_lib <= c_road) 
+        {
+            res = c_lib * n;
+            return res;
+        }
+        // many cities have a library
+        List<List<Integer>> adjlist = new ArrayList<>();
+        for(int i = 0; i < n; i++)
+        {
+            adjlist.add(new ArrayList<>());
+        }
+        for(int i = 0; i < cities.size(); i++)
+        {
+            int v1 = cities.get(i).get(0) - 1;
+            int v2 = cities.get(i).get(1) - 1;
+            adjlist.get(v1).add(v2);
+            adjlist.get(v2).add(v1);
+        }
+        boolean visited[] = new boolean[n];
+        for(int i = 0; i < n; i++)
+        {
+            if(visited[i] == false)
+            {
+                res += c_lib + (bfs(i, visited, adjlist) - 1) * c_road;
+            }
+        }
+        return res;
+    }
+
+}
+
+public class HelloWorld {
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int q = sc.nextInt();
+        while(q-- > 0)
+        {
+            int n = sc.nextInt();
+            long m = sc.nextInt();
+            long c_lib = sc.nextInt();
+            long c_road = sc.nextInt();
+            List<List<Integer>> edges = new ArrayList<>();
+            for(int i = 0; i < m; i++)
+            {
+                List<Integer> tmp = new ArrayList<>();
+                int x1 = sc.nextInt();
+                int x2 = sc.nextInt();
+                tmp.add(x1);
+                tmp.add(x2);
+                edges.add(tmp);
+            }
+            System.out.println(Result.roadsAndLibraries(n, c_lib, c_road, edges));
+        }
+        sc.close();
+    }
+}
