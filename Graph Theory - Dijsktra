@@ -1,0 +1,66 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+#define Max 100000
+
+int findMin(vector<int> const &weight, vector<bool> const &visited)
+{
+    int minn = 0;
+    int minnval = Max;
+    for(int i = 0; i < weight.size(); i++)
+    {
+        if(weight[i] < minnval && visited[i] == false) 
+        {
+            minn = i;
+            minnval = weight[i];
+        }
+    }
+    return minn;
+}
+
+void dijsktra(int start, vector<vector<int>> &a)
+{   
+    vector<bool> visited(a.size(), false);
+    vector<int> weight(a.size(), Max);
+    weight[start] = 0;
+    bool checkall = false;
+    while(checkall == false)
+    {
+        int pos = findMin(weight, visited);
+        visited[pos] = true;
+        for(int i = 0; i < a[pos].size(); i++)
+        {
+            if(weight[pos] + a[pos][i] < weight[i])
+            {
+                weight[i] = weight[pos] + a[pos][i];
+            }
+        }
+        checkall = true;
+        for(int i = 0; i < a.size(); i++)
+        {
+            if(visited[i] == false) checkall = false;
+        }
+    }
+    for(int i = 0; i < a.size(); i++)
+    {
+        cout << "From " << start + 1 << " to " << i + 1 << " = " << weight[i] << endl;
+    }
+}
+
+int main()
+{
+    int n;
+    cin >> n;
+    vector<vector<int>> a(n, vector<int> (n, Max));
+    int k;
+    cin >> k;
+    for(int i = 0; i < k; i++)
+    {
+        int v1, v2, w;
+        cin >> v1 >> v2 >> w;
+        a[v1 - 1][v2 - 1] = w;
+        a[v2 - 1][v1 - 1] = w;
+    }
+    dijsktra(0, a);
+    return 0;
+}
