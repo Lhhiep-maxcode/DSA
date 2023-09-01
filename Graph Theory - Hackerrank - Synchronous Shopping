@@ -1,0 +1,228 @@
+We use Dijsktra and bit-masking to solve this problem
+Dijsktra in this solution is not the same as original Dijsktra. It can be generalized as to achieve something and satisfy condition with the best way - smallest weight
+Bit-masking in this solution is to save the types of fish collected when travelling through shops
+
+In this solution, i use:
+  - Matrix totalweight[][]: totalweight[i][j] is used to save the best way - the smallest weight to travel to i-th shop with j fish types (bit masking...i dont know how to describe it) collected
+  - Bit masking to save the types of fish collected (00001: type 1, 00011: type 1 and 2, 00111: type 1 and 2 and 3)
+  - Set of [distance, shop, types] contains the distance travel from shop 0 to the current shop with j types of fish collected
+
+Code sample (Java and cpp)
+//Java
+import java.io.*;
+import java.util.*;
+
+class Pair
+{
+    int first;
+    int second;
+    Pair(int f, int s)
+    {
+        first = f;
+        second = s;
+    }
+    Pair(){}
+}
+
+class Pair3 implements Comparable<Pair3>
+{
+    int first;
+    int second;
+    int third;
+    Pair3(int f, int s, int t)
+    {
+        first = f;
+        second = s;
+        third = t;
+    }
+    Pair3(){}
+    @Override
+    public int compareTo(Pair3 tmp)
+    {
+        if(first < tmp.first) return -1;
+        else if(first == tmp.first)
+        {
+            if(second < tmp.second) return -1;
+            else if(second == tmp.second)
+            {
+                if(third < tmp.third) return -1;
+                else if(third == tmp.third) return 0;
+                else return 1;
+            }
+            else return 1;
+        }
+        return 1;
+    }
+}
+
+public class HelloWorld {
+
+    public static void dijsktra(int n, int fishtypes[], List<List<Pair>> adj, List<List<Integer>> totalweight)
+    {
+        Set<Pair3> set = new TreeSet<>();
+        //add Pair3 = [distance, shop, types of fish] of shop 0 to set
+        
+        set.add(new Pair3(0, 0, fishtypes[0]));
+        while(set.isEmpty() == false)
+        {
+            Pair3 node = set.iterator().next();
+            set.remove(set.iterator().next());
+            int curdist = node.first;
+            int curshop = node.second;
+            int curTypesOfFish = node.third;
+
+            if(totalweight.get(curshop).get(curTypesOfFish) <= curdist)
+            {
+                //we will skip to the next node if the distance from 0 to curshop is smaller than this node's distance with the same types of fish
+                continue;
+            }
+            totalweight.get(curshop).set(curTypesOfFish, curdist);
+            for(int i = 0; i < adj.get(curshop).size(); i++)
+            {
+                Pair3 nextnode = new Pair3();
+                nextnode.first = curdist + adj.get(curshop).get(i).second;
+                nextnode.second = adj.get(curshop).get(i).first;
+                nextnode.third = curTypesOfFish | fishtypes[adj.get(curshop).get(i).first]; //bit-masking
+                set.add(nextnode);
+            }
+        }
+    }
+    public static void main(String[] args) {
+        /* Enter your code here. Read input from STDIN. Print output to STDOUT. Your class should be named Solution. */
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        int k = sc.nextInt();
+        int fishtypes[] = new int[n];
+        // bit-masking for types of fish sold by i-th shop 
+        for(int i = 0; i < n; i++)
+        {
+            int x = sc.nextInt();
+            for(int j = 0; j < x; j++)
+            {
+                int type = sc.nextInt();
+                fishtypes[i] = fishtypes[i] | (1 << (type - 1));
+            }
+        }
+        //create adj list
+        List<List<Pair>> adj = new ArrayList<>();
+        for(int i = 0; i < n; i++)
+        {
+            adj.add(new ArrayList<>());
+        }
+        for(int i = 0; i < m; i++)
+        {
+            int shop1 = sc.nextInt() - 1;
+            int shop2 = sc.nextInt() - 1;
+            int weight = sc.nextInt();
+            adj.get(shop1).add(new Pair(shop2, weight));
+            adj.get(shop2).add(new Pair(shop1, weight));
+        }
+        //totalweight[i][j] save total weight from 1 to i-th shop with j types collected
+        List<List<Integer>> totalweight = new ArrayList<>();
+        for(int i = 0; i < n; i++)
+        {
+            totalweight.add(new ArrayList<>());
+            for(int j = 0; j < ((1 << k)); j++)
+            {
+                totalweight.get(i).add(Integer.MAX_VALUE);
+            }
+        }
+        dijsktra(n, fishtypes, adj, totalweight);
+        int res = Integer.MAX_VALUE;
+        for(int i = 0; i < totalweight.get(n - 1).size(); i++)
+        {
+            if(totalweight.get(n - 1).get(i) == Integer.MAX_VALUE) continue;
+            for(int j = i; j < totalweight.get(n - 1).size(); j++)
+            {
+                if(totalweight.get(n - 1).get(j) == Integer.MAX_VALUE) continue;
+                //check if 2 cats collect enough types of fish
+                if((i | j) == (1 << k) - 1) 
+                {
+                    res = Math.min(res, Math.max(totalweight.get(n - 1).get(i), totalweight.get(n - 1).get(j)));
+                }
+            }
+        }
+        System.out.println(res);
+        sc.close();
+    }
+}
+
+//Cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+#define Max 100000
+
+void dijsktra(int n, vector<int> &fishtypes, vector<vector<pair<int, int>>> &adj, vector<vector<int>> &totalweight)
+{
+    //create set of [distance, shop, types of fish]
+    set<pair<int, pair<int, int>>> st;
+    st.insert({0, {0, fishtypes[0]}});
+    while(st.size() != 0)
+    {
+        pair<int, pair<int, int>> node = *(st.begin());
+        st.erase(st.begin());
+        int curdist = node.first;
+        int curshop = node.second.first;
+        int curTypeOfFish = node.second.second;
+        //we will skip when we already go to that shop with the same types of fish collected but with smaller total weight
+        if(curdist >= totalweight[curshop][curTypeOfFish]) continue;
+        totalweight[curshop][curTypeOfFish] = curdist;
+        for(int i = 0; i < adj[curshop].size(); i++)
+        {
+            int newdist = curdist + adj[curshop][i].second;
+            int nextshop = adj[curshop][i].first;
+            int newtype = curTypeOfFish | fishtypes[nextshop];
+            pair<int, pair<int, int>> nextnode(newdist, {nextshop, newtype});
+            st.insert(nextnode);
+        }
+    }
+}
+int main()
+{
+    int n, m, k;
+    cin >> n >> m >> k;
+    vector<int> fishtypes(n, 0);
+    //bit-masking for types of fish sold by i-th shop
+    for(int i = 0; i < n; i++)
+    {
+        int x;
+        cin >> x;
+        for(int j = 0; j < x; j++)
+        {
+            int type;
+            cin >> type;
+            fishtypes[i] = fishtypes[i] | (1 << (type - 1));
+        }
+    }
+    //create adj list
+    vector<vector<pair<int, int>>> adj(n, vector<pair<int, int>>());
+    for(int i = 0; i < m; i++)
+    {
+        int shop1;
+        int shop2;
+        int weight;
+        cin >> shop1 >> shop2 >> weight;
+        adj[shop1 - 1].push_back({shop2 - 1, weight});
+        adj[shop2 - 1].push_back({shop1 - 1, weight});
+    }
+    vector<bool> visited(n, false);
+    vector<vector<int>> totalweight(n, vector<int>(1 << k, INT_MAX));
+    dijsktra(n, fishtypes, adj, totalweight);
+    int res = INT_MAX;
+    for(int i = 0; i < (1 << k); i++)
+    {
+        if(totalweight[n - 1][i] == INT_MAX) continue;
+        for(int j = i; j < (1 << k); j++)
+        {
+            if(totalweight[n - 1][j] == INT_MAX) continue;
+            if((i | j) == (1 << k) - 1)
+            {
+                res = min(res, max(totalweight[n - 1][i], totalweight[n - 1][j]));
+            }
+        }
+    }
+    cout << res;
+    return 0;
+}
