@@ -1,0 +1,118 @@
+I simply use Kruskal to make the minimal spanning tree
+
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Checker implements Comparator<List<Integer>>
+{
+    public int compare(List<Integer> l1, List<Integer> l2)
+    {
+        if(l1.get(2) > l2.get(2)) return 1;
+        else if(l1.get(2) < l2.get(2)) return -1;
+        else
+        {
+            if((l1.get(0) + l1.get(1) + l1.get(2)) < (l2.get(0) + l2.get(1) + l2.get(2))) return -1;
+            else if((l1.get(0) + l1.get(1) + l1.get(2)) > (l2.get(0) + l2.get(1) + l2.get(2))) return 1;
+            else return 0;
+        }
+        //return 0;
+    }
+}
+
+class Result {
+    public static int kruskals(int gNodes, List<Integer> gFrom, List<Integer> gTo, List<Integer> gWeight) {
+        int res = 0;
+        List<List<Integer>> edges = new ArrayList<>();
+        for(int i = 0; i < gFrom.size(); i++)
+        {
+            List<Integer> tmp = new ArrayList<>();
+            tmp.add(gFrom.get(i));
+            tmp.add(gTo.get(i));
+            tmp.add(gWeight.get(i));
+            edges.add(tmp);
+        }
+        Collections.sort(edges, new Checker());
+        int body[] = new int[gNodes]; //i mean to classify the trees by the num 0, 1, 2,...while 0 is a tree with 1 node
+        int bodyth = 1;
+        for(int i = 0; i < gNodes - 1; i++)
+        {
+            boolean isok = false;
+            while(isok == false)
+            {
+                if(body[edges.get(0).get(0) - 1] == body[edges.get(0).get(1) - 1] && body[edges.get(0).get(1) - 1] != 0)
+                {
+                    //if 2 nodes from the same tree, it would create a cycle when choosing a path connecting these nodes
+                    edges.remove(0);
+                }
+                else
+                {
+                    isok = true;
+                    if(body[edges.get(0).get(0) - 1] == 0 && body[edges.get(0).get(1) - 1] == 0)
+                    {
+                        //if 2 nodes are single nodes, we make a new tree containing these nodes
+                        body[edges.get(0).get(0) - 1] = bodyth;
+                        body[edges.get(0).get(1) - 1] = bodyth;
+                        bodyth++;
+                        res += edges.get(0).get(2);
+                    }
+                    else if(body[edges.get(0).get(0) - 1] == 0 || body[edges.get(0).get(1) - 1] == 0)
+                    {
+                        //if 1 node is from a tree and the other is a single node, we insert that node to the tree
+                        int fusion = Math.max(body[edges.get(0).get(0) - 1], body[edges.get(0).get(1) - 1]);
+                        body[edges.get(0).get(0) - 1] = fusion;
+                        body[edges.get(0).get(1) - 1] = fusion;
+                        res += edges.get(0).get(2);
+                    }
+                    else
+                    {
+                        //if 2 nodes are from 2 different tree, we concate these trees to one tree (the tree with smaller number)
+                        int body1 = body[edges.get(0).get(0) - 1];
+                        int body2 = body[edges.get(0).get(1) - 1];
+                        int fusion = Math.min(body1, body2);
+                        for(int x = 0; x < gNodes; x++)
+                        {
+                            if(body[x] == body1 || body[x] == body2)
+                            {
+                                body[x] = fusion;
+                            }
+                        }
+                        res += edges.get(0).get(2);
+                    }
+                    edges.remove(0);
+                }
+            }
+        }
+        return res;
+    }
+
+}
+
+public class HelloWorld {
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int gNodes = sc.nextInt();
+        int gEdges = sc.nextInt();
+        List<Integer> gFrom = new ArrayList<>();
+        List<Integer> gTo = new ArrayList<>();
+        List<Integer> gWeight = new ArrayList<>();
+        for(int i = 0; i < gEdges; i++)
+        {
+            gFrom.add(sc.nextInt());
+            gTo.add(sc.nextInt());
+            gWeight.add(sc.nextInt());
+        }
+
+        System.out.println(Result.kruskals(gNodes, gFrom, gTo, gWeight));
+        sc.close();
+        
+    }
+}
