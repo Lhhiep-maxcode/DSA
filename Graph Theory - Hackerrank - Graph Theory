@@ -1,0 +1,62 @@
+Hints: 
+It's easy to realize that Even number - even number = even number, odd number - even number = odd number
+Therefore, we just simply count the number of subtree having even nodes
+To do that, we can use dfs to tranverse to count the number of nodes in a subtree
+
+Java - Code sample:
+
+import java.util.*;
+
+class Result
+{
+    static int dfs(int v, List<List<Integer>> adj, int res[])
+    {
+        int ans = 1;
+        res[v] = 1;
+        for(int i = 0; i < adj.get(v).size(); i++)
+        {
+            if(res[adj.get(v).get(i)] == 0)
+            {
+                ans += dfs(adj.get(v).get(i), adj, res);
+            }
+        }
+        res[v] = ans;
+        return ans;
+    }
+    static int evenForest(int nodes, int edges, List<List<Integer>> adj)
+    {
+        int numOfNodes[] = new int[nodes];
+        dfs(0, adj, numOfNodes);
+        int res = -1;
+        for(int i = 0; i < nodes; i++)
+        {
+            if(numOfNodes[i] % 2 == 0) res++;
+        }
+        return res;
+    }
+}
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int nodes = sc.nextInt();
+        int edges = sc.nextInt();
+        List<List<Integer>> adj = new ArrayList<>();
+        for(int i = 0; i < nodes; i++)
+        {
+            adj.add(new ArrayList<>());
+        }
+        for(int i = 0; i < edges; i++)
+        {
+            int v1 = sc.nextInt() - 1;
+            int v2 = sc.nextInt() - 1;
+            adj.get(v1).add(v2);
+            adj.get(v2).add(v1);
+        }
+        System.out.println(Result.evenForest(nodes, edges, adj));
+        sc.close();
+    }
+}
+
+
+
