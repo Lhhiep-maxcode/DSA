@@ -1,0 +1,287 @@
+Hint:
+The first thing to do is tranversing the tree to imagine how the tree is
+Next, we notice that in the tree we've created above:
+  - if u - v guess is correct. It means u is parent[v]. That guess is also correct for all nodes (except v's children as it will make the tree reverse)
+  - if u - v guess is incorrect. It means v is parent[u]. That guess is only correct when root is u or u's children
+=> To count how many win cases, i suggest to use dfs to reuse the number of win cases of parent nodes
+
+Code sample:
+(java)
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Result {
+
+    /*
+     * Complete the 'storyOfATree' function below.
+     *
+     * The function is expected to return a STRING.
+     * The function accepts following parameters:
+     *  1. INTEGER n
+     *  2. 2D_INTEGER_ARRAY edges
+     *  3. INTEGER k
+     *  4. 2D_INTEGER_ARRAY guesses
+     */
+
+    public static int gcd(int a, int b)
+    {
+        if(b % a == 0) return a;
+        return gcd(b % a, a);
+    }
+
+    public static void dfs(int v, List<List<Integer>> adj, boolean visited[], int relationship[])
+    {
+        visited[v] = true;
+        for(int i = 0; i < adj.get(v).size(); i++)
+        {
+            int nv = adj.get(v).get(i);
+            if(visited[nv] == false)
+            {
+                relationship[nv] = v;
+                dfs(nv, adj, visited, relationship);
+            }
+        }
+    }
+
+    public static int count_win_cases(int pos, int parent, int k, int count_arr[], List<List<Integer>> adj)
+    {
+        count_arr[pos] += count_arr[parent];
+        int res = 0;
+        if(count_arr[pos] >= k) 
+            res++;
+        for(int i = 0; i < adj.get(pos).size(); i++)
+        {
+            int next_root = adj.get(pos).get(i);
+            if(next_root != parent) 
+                res += count_win_cases(next_root, pos, k, count_arr, adj);
+        }
+        return res;
+    }
+
+    public static String storyOfATree(int n, List<List<Integer>> edges, int k, List<List<Integer>> guesses) {
+        //create adjacency list
+        int edgesnum = edges.size();
+        List<List<Integer>> adj = new ArrayList<>();
+        
+        for(int i = 0; i <= n; i++) 
+            adj.add(new ArrayList<>());
+        for(int i = 0; i < edgesnum; i++)
+        {
+            int v1 = edges.get(i).get(0);
+            int v2 = edges.get(i).get(1);
+            adj.get(v1).add(v2);
+            adj.get(v2).add(v1);
+        }
+
+        //create relationship[] array: relationship[child] = parent
+        int relationship[] = new int[n + 1];
+        boolean visited[] = new boolean[n + 1];
+        relationship[1] = 0;
+        
+        dfs(1, adj, visited, relationship);
+
+        //check how many possible roots and solve the problem
+        int cases = n;
+        int win_cases = 0;
+        int numOfGuesses = guesses.size();
+        int count_arr[] = new int[n + 1];
+        
+        for(int i = 0; i < numOfGuesses; i++)
+        {
+            int u = guesses.get(i).get(0);
+            int v = guesses.get(i).get(1);
+            if(relationship[v] == u)
+            {
+                count_arr[1]++;
+                count_arr[v]--;
+            }
+            else
+            {
+                count_arr[u]++;
+            }
+        }
+        
+        win_cases = count_win_cases(1, 0, k, count_arr, adj);
+        if(win_cases == 0) return "0/1";
+        int gcdd = gcd(win_cases, cases);
+        win_cases /= gcdd;
+        cases /= gcdd;
+        return Integer.toString(win_cases) + "/" + Integer.toString(cases);
+    }
+
+}
+
+public class HelloWorld {
+    public static void main(String[] args) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        //BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
+
+        int q = Integer.parseInt(bufferedReader.readLine().trim());
+
+        IntStream.range(0, q).forEach(qItr -> {
+            try {
+                int n = Integer.parseInt(bufferedReader.readLine().trim());
+
+                List<List<Integer>> edges = new ArrayList<>();
+
+                IntStream.range(0, n - 1).forEach(i -> {
+                    try {
+                        edges.add(
+                            Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                                .map(Integer::parseInt)
+                                .collect(toList())
+                        );
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+
+                String[] firstMultipleInput = bufferedReader.readLine().replaceAll("\\s+$", "").split(" ");
+
+                int g = Integer.parseInt(firstMultipleInput[0]);
+
+                int k = Integer.parseInt(firstMultipleInput[1]);
+
+                List<List<Integer>> guesses = new ArrayList<>();
+
+                IntStream.range(0, g).forEach(i -> {
+                    try {
+                        guesses.add(
+                            Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                                .map(Integer::parseInt)
+                                .collect(toList())
+                        );
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+
+                String result = Result.storyOfATree(n, edges, k, guesses);
+                System.out.println(result);
+
+                //bufferedWriter.write(result);
+                //bufferedWriter.newLine();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        bufferedReader.close();
+        //bufferedWriter.close();
+    }
+}
+
+
+(Python)
+#!/bin/python3
+
+import math
+import os
+import random
+import re
+import sys
+
+#
+# Complete the 'storyOfATree' function below.
+#
+# The function is expected to return a STRING.
+# The function accepts following parameters:
+#  1. INTEGER n
+#  2. 2D_INTEGER_ARRAY edges
+#  3. INTEGER k
+#  4. 2D_INTEGER_ARRAY guesses
+#
+
+
+def dfs(v, relationship, visited, adj):
+    visited[v] = True
+    for i in range(len(adj[v])):
+        if not visited[adj[v][i]]:
+            relationship[adj[v][i]] = v
+            dfs(adj[v][i], relationship, visited, adj)
+
+
+def count_win_cases(pos, parent, k, count, adj):
+    count[pos] += count[parent]
+    res = 0
+    if count[pos] >= k:
+        res += 1
+    for i in adj[pos]:
+        if i != parent:
+            res += count_win_cases(i, pos, k, count, adj)
+    return res
+
+
+def gcd(a, b):
+    if b % a == 0:
+        return a
+    return gcd(b % a, a)
+
+
+def storyOfATree(n, edges, k, guesses):
+    # Write your code here
+    adj = []
+    for i in range(n + 1):
+        adj.append([])
+    for u, v in edges:
+        adj[u].append(v)
+        adj[v].append(u)
+
+    relationship = [0] * (n + 1)
+    visited = [False] * (n + 1)
+    x = 0
+    dfs(1, relationship, visited, adj)
+
+    count = [0] * (n + 1)
+    for u, v in guesses:
+        if relationship[v] == u:
+            count[1] += 1
+            count[v] -= 1
+        else:
+            count[u] += 1
+    win_cases = count_win_cases(1, 0, k, count, adj)
+    total_cases = n
+    if win_cases == 0:
+        return "0/1"
+    tmp = gcd(win_cases, total_cases)
+    return str(int(win_cases / tmp)) + "/" + str(int(total_cases/tmp))
+
+
+if __name__ == '__main__':
+    #fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    q = int(input().strip())
+
+    for q_itr in range(q):
+        n = int(input().strip())
+
+        edges = []
+
+        for _ in range(n - 1):
+            edges.append(list(map(int, input().rstrip().split())))
+
+        first_multiple_input = input().rstrip().split()
+
+        g = int(first_multiple_input[0])
+
+        k = int(first_multiple_input[1])
+
+        guesses = []
+
+        for _ in range(g):
+            guesses.append(list(map(int, input().rstrip().split())))
+
+        result = storyOfATree(n, edges, k, guesses)
+
+        print(result)
+
+    #fptr.close()
