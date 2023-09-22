@@ -1,0 +1,38 @@
+Hints: Use set to contain all possible edges and pick the first element in set as it is the smallest weight
+
+Code sample: (C++)
+int prims(int n, vector<vector<int>> edges, int start) {
+    int res = 0;
+    vector<vector<pair<int, int>>> adj(n + 1, vector<pair<int, int>>());
+    int sz = edges.size();
+    
+    for (int i = 0; i < sz; i++) {
+        int v1 = edges[i][0];
+        int v2 = edges[i][1];
+        int w = edges[i][2];
+        adj[v1].push_back({w, v2});
+        adj[v2].push_back({w, v1});
+    }
+    
+    set<pair<int, int>> st;
+    vector<bool> visited(n + 1, false);
+    
+    sz = adj[start].size();
+    for (int i = 0; i < sz; i++) {
+        st.insert(adj[start][i]);
+    }
+    visited[start] = true;
+    while (st.size() != 0) {
+        pair<int, int> element = *(st.begin());
+        st.erase(st.begin());
+        if (visited[element.second] == false) {
+            res += element.first;
+            visited[element.second] = true;
+            sz = adj[element.second].size();
+            for (int i = 0; i < sz; i++) {
+                st.insert(adj[element.second][i]);
+            }
+        }
+    }
+    return res;
+}
