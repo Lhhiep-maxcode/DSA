@@ -1,0 +1,16 @@
+Hint: 
+  Dont try to create a string with (k * curr_length)
+  Notice to use proper numeric type
+
+Code sample:
+  public static int superDigit(String n, int k) {
+    // Write your code here
+        if (k == 0) return 0;
+        if (n.length() == 1 && k == 1) return Integer.valueOf(n);
+        long sum = 0;
+        for(int i = 0; i < n.length(); i++) {
+            sum += n.charAt(i) - '0';
+        }
+        sum = sum * k;
+        return superDigit(Long.toString(sum), 1);
+    }
